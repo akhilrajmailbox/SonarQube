@@ -1,0 +1,48 @@
+version: '3.5'
+services:
+  sonarqube:
+    image: sonarqube:8.9-community
+    container_name: sonarqube
+    hostname: sonarqube
+    restart: always
+    environment:
+      sonar.jdbc.username: "sonar"
+      sonar.jdbc.password: "SomeSecurePass"
+      sonar.jdbc.url: "jdbc:postgresql://sonarqube-postgres:5432/sonar"
+      sonar.web.host: "0.0.0.0"
+      sonar.web.javaOpts: "-Xmx512m -Xms256m -XX:+HeapDumpOnOutOfMemoryError"
+      sonar.ce.javaOpts: "-Xmx512m -Xms256m -XX:+HeapDumpOnOutOfMemoryError"
+      sonar.web.context: "/sonarqube"
+    ports:
+      - 30001:9000
+    # expose:
+    #   - 9000
+    volumes:
+      - /DATA/DevOps/sonarqube/data:/opt/sonarqube/data
+      - /DATA/DevOps/sonarqube/conf:/opt/sonarqube/conf
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_bundled-plugins:/opt/sonarqube/lib/bundled-plugins
+    networks:
+      - sonar-network
+
+  sonarqube-postgres:
+    image: postgres:12
+    container_name: sonarqube-postgres
+    hostname: sonarqube-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: "sonar"
+      POSTGRES_PASSWORD: "SomeSecurePass"
+    volumes:
+      - /DATA/DevOps/sonarqube/postgresql-data:/var/lib/postgresql/data
+    networks:
+      - sonar-network
+
+networks:
+  sonar-network:
+    external: true
+    name: devops-network
+
+volumes:
+  sonarqube_extensions:
+  sonarqube_bundled-plugins:
